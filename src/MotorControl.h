@@ -1,13 +1,9 @@
-/*
-  Morse.h - Library for flashing Morse code.
-  Created by David A. Mellis, November 2, 2007.
-  Released into the public domain.
-*/
-
+// MotorControl.h
 #ifndef MotorLib_h
 #define MotorLib_h
 
 #include "Arduino.h"
+#include <PID_v1.h>
 
 class MotorControl
 {
@@ -15,7 +11,7 @@ class MotorControl
     MotorControl(
       int motor_pin_a,
       int motor_pin_b,
-      int encoder_pin_a
+      int encoder_pin
     );
 
     double Setpoint;
@@ -25,28 +21,33 @@ class MotorControl
     int MotorPosition;
     double MotorSpeed;
     
-    long LastPulse;
-    long CurrentPulse;
+    int Mode;
 
     void move();
-    void spin();
+    void spin(float speed);
     void stop();
     void increment();
     void handleControl();
   private:
-
+    PID myPID;
     void calculateSpeed();
 
+    int _last_state;
+
+    long lastCalc;
+    long _CurrentPulse;
+    long _LastPulse;
+
     double Kp;
-    double K1;
+    double Ki;
     double Kd;
 
     int _pinA;
     int _pinB;
     int _encoderPin;
-    int _encoderPosition;
-    static MotorControl* instance;
-    static void _static_increment();
+    void _handleSensor();
+    // static MotorControl* instance0;
+    // static MotorControl* instance1;
 };
 
 #endif
