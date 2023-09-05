@@ -23,11 +23,14 @@ class MotorControl
     
     int Mode;
 
-    void move();
+    void move(int distance);
     void spin(float speed);
     void stop();
     void increment();
     void handleControl();
+
+    int distance;
+
   private:
     PID myPID;
     void calculateSpeed();
@@ -41,6 +44,10 @@ class MotorControl
     double Kp;
     double Ki;
     double Kd;
+
+    void _runSpeed(float speed);
+    void _moveTo(int distance);
+
 
     int _pinA;
     int _pinB;

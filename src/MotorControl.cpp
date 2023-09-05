@@ -56,22 +56,47 @@ void MotorControl::stop(){
   Mode = STOP_MODE;
 }
 
-void MotorControl::handleControl(){
-  _handleSensor();
-  calculateSpeed();
-  if (Mode == STOP_MODE) {
-    digitalWrite(_pinA, 0);
-    digitalWrite(_pinB, 0);
-  }
-  if (Mode == SPEED_MODE) {
+void MotorControl::move(int dist){
+  Mode = POSITION_MODE;
+  distance = dist;
+}
+
+void MotorControl::_runSpeed(float speed){
+    Setpoint = speed;
     Input = MotorSpeed;
     myPID.Compute();
+    Output = min(255, max(0, Output));
     if (Setpoint > 0) {
       analogWrite(_pinA, abs(Output));
       analogWrite(_pinB, 0);
     } else {
       analogWrite(_pinA, 0);      
       analogWrite(_pinB, abs(Output));
+    }
+}
+
+void MotorControl::handleControl(){
+  _handleSensor();
+  calculateSpeed();
+
+  if (Mode == STOP_MODE) {
+    digitalWrite(_pinA, 0);
+    digitalWrite(_pinB, 0);
+  }
+
+  if (Mode == SPEED_MODE) {
+    _runSpeed(Setpoint);
+  }
+
+  if (Mode == POSITION_MODE) {
+    if (MotorPosition < 10 && distance - MotorPosition > 20) {
+      _runSpeed(200);
+    } else if (distance - MotorPosition > 20) {
+      _runSpeed(100);
+    } else if (distance - MotorPosition <= 20 && distance - MotorPosition > 0) {
+      _runSpeed(30);
+    } else {
+      stop();
     }
   }
 }

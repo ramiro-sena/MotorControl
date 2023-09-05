@@ -6,8 +6,8 @@ MotorControl MotorDir(9, 10, 3);
 
 void setup() {
   Serial.begin(115200);
-  MotorEsq.spin(50.000);
-  MotorDir.spin(50.000);
+  MotorEsq.move(100);
+  MotorDir.move(100);
 }
 
 float cm_to_pulse = 1.85;
@@ -15,13 +15,8 @@ int distance = 30 * cm_to_pulse;
 
 
 void loop() {
-  if(MotorEsq.MotorPosition >= distance) {
-    MotorEsq.stop();
-  }
-  if(MotorDir.MotorPosition >= distance) {
-    MotorDir.stop();
-  }
+
   MotorEsq.handleControl();
   MotorDir.handleControl();
-  Serial.println("0,150,"+ String(MotorEsq.MotorPosition)+ "," + String(MotorDir.MotorPosition));
+  Serial.println("0,150,"+ String(MotorEsq.Setpoint)+ "," + String(MotorDir.Setpoint));
 }
