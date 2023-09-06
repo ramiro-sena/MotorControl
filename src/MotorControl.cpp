@@ -33,16 +33,18 @@ MotorControl::MotorControl(
   _last_state = 0;
   Mode = STOP_MODE;
 
+  // int queue[10];
+  // _queue[10] = queue;
   Kp = 0.5; Ki = 5.5; Kd = 0.01;
-
-
+  for (unsigned int i; i < _queueSize; i++) {
+    _queue[i] = 0;
+  }
   // spin(100);
   myPID.SetMode(AUTOMATIC);
 }
 
 
 void MotorControl::_handleSensor() {
-  
   // int value = (PIND & (1 << PD2)) >> PD2;
   boolean value = digitalRead(_encoderPin);
   if (value != _last_state) {
@@ -52,21 +54,23 @@ void MotorControl::_handleSensor() {
   }
 }
 
-void MotorControl::stop(){
-  Mode = STOP_MODE;
-}
-
 void MotorControl::move(int dist){
-  Mode = POSITION_MODE;
-  distance = dist;
+  // Mode = POSITION_MODE;
+  // distance = dist;
+  for (unsigned int i; i < _queueSize; i++) {
+    if (_queue[i] == 0) {
+      _queue[i] = dist;
+      break;
+    }
+  }
 }
 
 void MotorControl::_runSpeed(float speed){
-    Setpoint = speed;
+Setpoint = speed;
     Input = MotorSpeed;
     myPID.Compute();
     Output = min(255, max(0, Output));
-    if (Setpoint > 0) {
+    if (direction > 0) {
       analogWrite(_pinA, abs(Output));
       analogWrite(_pinB, 0);
     } else {
@@ -78,6 +82,7 @@ void MotorControl::_runSpeed(float speed){
 void MotorControl::handleControl(){
   _handleSensor();
   calculateSpeed();
+  handleQueue();
 
   if (Mode == STOP_MODE) {
     digitalWrite(_pinA, 0);
@@ -89,6 +94,7 @@ void MotorControl::handleControl(){
   }
 
   if (Mode == POSITION_MODE) {
+    distance = abs(distance);
     if (MotorPosition < 10 && distance - MotorPosition > 20) {
       _runSpeed(200);
     } else if (distance - MotorPosition > 20) {
@@ -96,7 +102,14 @@ void MotorControl::handleControl(){
     } else if (distance - MotorPosition <= 20 && distance - MotorPosition > 0) {
       _runSpeed(30);
     } else {
-      stop();
+      Serial.println("Done");
+      Mode = STOP_MODE;
+      _isMoving = false;
+      distance = 0;
+      MotorPosition = 0;
+      for (int i = 0; i < _queueSize - 1; i++) {
+        _queue[i] = _queue[i + 1];
+      }
     }
   }
 }
@@ -122,10 +135,30 @@ void MotorControl::calculateSpeed(){
   }
 }
 
+void MotorControl::handleQueue(){
+  if ( _queue[0] != 0 && !_isMoving) {
+    _isMoving = true;
+    Mode = POSITION_MODE;
+    distance = _queue[0];
+
+    if (distance > 0) {
+      direction = 1;
+    } else if (distance < 0) {
+      direction = -1;
+    }
+    Serial.println("starting " + String(distance));
+  }
+}
+
 void MotorControl::spin(float speed){
   Mode = SPEED_MODE;
   Input = MotorSpeed;
-  Setpoint = speed;
+  if (speed > 0) {
+    direction = 1;
+  } else if (speed < 0) {
+    direction = -1;
+  }
+  Setpoint = abs(speed);
 }
 
 
