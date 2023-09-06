@@ -161,4 +161,11 @@ void MotorControl::spin(float speed){
   Setpoint = abs(speed);
 }
 
-
+void MotorControl::stop() {
+  Mode = STOP_MODE;
+  MotorPosition = 0;
+  _isMoving = false;
+  for (unsigned int i; i < _queueSize; i++) {
+    _queue[i] = 0;
+  }
+}
