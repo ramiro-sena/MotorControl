@@ -36,7 +36,7 @@ MotorControl::MotorControl(
   // int queue[10];
   // _queue[10] = queue;
   Kp = 0.5; Ki = 5.5; Kd = 0.01;
-  for (unsigned int i; i < _queueSize; i++) {
+  for (int i; i < _queueSize; i++) {
     _queue[i] = 0;
   }
   // spin(100);
@@ -57,7 +57,7 @@ void MotorControl::_handleSensor() {
 void MotorControl::move(int dist){
   // Mode = POSITION_MODE;
   // distance = dist;
-  for (unsigned int i; i < _queueSize; i++) {
+  for (int i; i < _queueSize; i++) {
     if (_queue[i] == 0) {
       _queue[i] = dist;
       break;
@@ -102,7 +102,8 @@ void MotorControl::handleControl(){
     } else if (distance - MotorPosition <= 20 && distance - MotorPosition > 0) {
       _runSpeed(30);
     } else {
-      Serial.println("Done");
+
+      // Serial.println("Done");
       Mode = STOP_MODE;
       _isMoving = false;
       distance = 0;
@@ -146,7 +147,7 @@ void MotorControl::handleQueue(){
     } else if (distance < 0) {
       direction = -1;
     }
-    Serial.println("starting " + String(distance));
+    // Serial.println("starting " + String(distance));
   }
 }
 
@@ -165,7 +166,7 @@ void MotorControl::stop() {
   Mode = STOP_MODE;
   MotorPosition = 0;
   _isMoving = false;
-  for (unsigned int i; i < _queueSize; i++) {
+  for (int i; i < _queueSize; i++) {
     _queue[i] = 0;
   }
 }

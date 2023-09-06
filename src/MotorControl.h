@@ -31,6 +31,7 @@ class MotorControl
 
     int distance;
     int _queue[20];
+    boolean _isMoving = false;
 
   private:
     PID myPID;
@@ -38,13 +39,11 @@ class MotorControl
     void handleQueue();
     const int _queueSize = 20;
 
-    boolean _isMoving = false;
 
     int _last_state;
     long lastCalc;
     long _CurrentPulse;
     long _LastPulse;
-
 
     double Kp;
     double Ki;
