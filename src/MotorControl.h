@@ -30,20 +30,27 @@ class MotorControl
     void handleControl();
 
     int distance;
+    int _queue[20];
 
   private:
     PID myPID;
     void calculateSpeed();
+    void handleQueue();
+    const int _queueSize = 20;
+
+    boolean _isMoving = false;
 
     int _last_state;
-
     long lastCalc;
     long _CurrentPulse;
     long _LastPulse;
 
+
     double Kp;
     double Ki;
     double Kd;
+
+    int direction = 1;
 
     void _runSpeed(float speed);
     void _moveTo(int distance);
