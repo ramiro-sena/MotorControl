@@ -4,7 +4,7 @@
 
 #include "Arduino.h"
 #include <MotorControl.h>
-
+#include <QuickPID.h>
 
 class CarControl
 {
@@ -28,20 +28,19 @@ class CarControl
     void loop();
     float commandQueue[50];
     int modeQueue[50];
-    void increment_left();
-    void increment_right();
     float leftMotorSpeed = 0;
     float lastLeftMotorSpeed = 0;
     float rightMotorSpeed = 0;
     float lastRightMotorSpeed = 0;
-
-  private:
-    double Setpoint;
-    double Input;
-    double Output;
-
     MotorControl LeftMotor;
     MotorControl RightMotor;
+    QuickPID steerPID;
+
+  private:
+    float Setpoint;
+    float Input;
+    float Output;
+
     void queueCommand(int mode, float value);
 
     double cm_to_pulse = 1.8;

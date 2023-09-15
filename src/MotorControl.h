@@ -3,7 +3,7 @@
 #define MotorLib_h
 
 #include "Arduino.h"
-#include <PID_v1.h>
+#include <QuickPID.h>
 
 class MotorControl
 {
@@ -14,9 +14,9 @@ class MotorControl
       int encoder_pin
     );
 
-    double Setpoint;
-    double Input;
-    double Output;
+    float Setpoint;
+    float Input;
+    float Output;
 
     int MotorPosition;
     double MotorSpeed;
@@ -33,7 +33,8 @@ class MotorControl
     void increment();
     void handleControl();
     
-    int moveSpeed = 80;
+    float moveSpeed = 80;
+    void setMoveSpeed(float speed);
 
     int distance;
     int _queue[20];
@@ -41,7 +42,7 @@ class MotorControl
     int steer = 0;
 
   private:
-    PID myPID;
+    QuickPID myPID;
     void calculateSpeed();
     void handleQueue();
     const int _queueSize = 20;
@@ -52,9 +53,9 @@ class MotorControl
     long _CurrentPulse;
     long _LastPulse;
 
-    double Kp;
-    double Ki;
-    double Kd;
+    float Kp;
+    float Ki;
+    float Kd;
 
     int direction = 1;
 

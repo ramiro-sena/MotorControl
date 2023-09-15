@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <MotorControl.h>
 #include <CarControl.h>
-#include <PID_v1.h>
+#include <QuickPID.h>
 
   CarControl::CarControl(
       int LM_PIN_1,
@@ -12,13 +12,16 @@
       int RM_PIN_3
   ) : 
     LeftMotor(LM_PIN_1, LM_PIN_2, LM_PIN_3),
-    RightMotor(RM_PIN_1, RM_PIN_2, RM_PIN_3) 
+    RightMotor(RM_PIN_1, RM_PIN_2, RM_PIN_3),
+    steerPID(&Input, &Output, &Setpoint)
   {
     for (int i; i < queueSize; i++) {
       commandQueue[i] = 0;
       modeQueue[i] = 0;
     }
-    PID (&Input, &Output, &Setpoint, 0.5, 5.5, 0.01, DIRECT);
+    steerPID.SetTunings(8, 8, 1);
+    steerPID.SetControllerDirection(0);
+    steerPID.SetMode(1);
   }
 
 
@@ -56,14 +59,14 @@
     if (mode == MOVE_MODE) {
       // LeftMotor.move(double(value) * cm_to_pulse);
       // RightMotor.move(double(value) * cm_to_pulse);
-      LeftMotor.spin(80);
-      RightMotor.spin(80);
+      LeftMotor.move(double(value) * cm_to_pulse );
+      RightMotor.move(double(value) * cm_to_pulse );
     }
 
     if (mode == ROTATE_MODE) {
-        double rate = 4.2;
-        LeftMotor.move(value/rate);
-        RightMotor.move(-value/rate);
+        double rate = 0.182;
+        LeftMotor.move(value * rate);
+        RightMotor.move(-value * rate);
     }
   }
 
@@ -82,9 +85,13 @@
 
     //handle steer
     int diff = LeftMotor.MotorPosition - RightMotor.MotorPosition;
+    Input = diff;
+    Setpoint = 0;
+    steerPID.Compute();
+    
     if (LeftMotor._isMoving && RightMotor._isMoving) {
-      RightMotor.steer = -diff;
-      LeftMotor.steer = diff;
+      RightMotor.steer = -Output;
+      LeftMotor.steer = Output;
     }
 
     if (!LeftMotor._isMoving
@@ -92,10 +99,12 @@
           if( commandQueue[0] != 0){
             LeftMotor.stop();
             RightMotor.stop();
-             float value = commandQueue[0];
+            steerPID.Reset();
+            float value = commandQueue[0];
             int mode = modeQueue[0];
+            delay(300);
             startCommand(mode, value);
-            Serial.println("starting " + String(value));
+            // Serial.println("starting " + String(value));
           } else {
                 for (int i = 0; i < queueSize - 1; i++) {
                   commandQueue[i] = commandQueue[i + 1];
