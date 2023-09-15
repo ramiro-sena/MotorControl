@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <MotorControl.h>
 #include <CarControl.h>
+#include <PID_v1.h>
 
   CarControl::CarControl(
       int LM_PIN_1,
@@ -17,7 +18,9 @@
       commandQueue[i] = 0;
       modeQueue[i] = 0;
     }
+    PID (&Input, &Output, &Setpoint, 0.5, 5.5, 0.01, DIRECT);
   }
+
 
   void CarControl::queueCommand(int mode, float value) {
     for (int i; i < queueSize; i++) {
@@ -51,8 +54,10 @@
     }
 
     if (mode == MOVE_MODE) {
-      LeftMotor.move(double(value) * cm_to_pulse);
-      RightMotor.move(double(value) * cm_to_pulse);
+      // LeftMotor.move(double(value) * cm_to_pulse);
+      // RightMotor.move(double(value) * cm_to_pulse);
+      LeftMotor.spin(80);
+      RightMotor.spin(80);
     }
 
     if (mode == ROTATE_MODE) {
@@ -62,16 +67,32 @@
     }
   }
 
+  void CarControl::stop() {
+    LeftMotor.stop();
+    RightMotor.stop();
+  } 
+
   void CarControl::loop() {
     LeftMotor.handleControl();
     RightMotor.handleControl();
+
+    //get speed
+    leftMotorSpeed = LeftMotor.Speed;
+    rightMotorSpeed = RightMotor.Speed;
+
+    //handle steer
+    int diff = LeftMotor.MotorPosition - RightMotor.MotorPosition;
+    if (LeftMotor._isMoving && RightMotor._isMoving) {
+      RightMotor.steer = -diff;
+      LeftMotor.steer = diff;
+    }
 
     if (!LeftMotor._isMoving
         && !RightMotor._isMoving) {
           if( commandQueue[0] != 0){
             LeftMotor.stop();
             RightMotor.stop();
-            float value = commandQueue[0];
+             float value = commandQueue[0];
             int mode = modeQueue[0];
             startCommand(mode, value);
             Serial.println("starting " + String(value));

@@ -18,7 +18,6 @@ class CarControl
       int RM_PIN_3
     );
 
-
     void run(float speed);
     void move(int distance);
     void rotate(int degrees);
@@ -29,8 +28,18 @@ class CarControl
     void loop();
     float commandQueue[50];
     int modeQueue[50];
+    void increment_left();
+    void increment_right();
+    float leftMotorSpeed = 0;
+    float lastLeftMotorSpeed = 0;
+    float rightMotorSpeed = 0;
+    float lastRightMotorSpeed = 0;
 
   private:
+    double Setpoint;
+    double Input;
+    double Output;
+
     MotorControl LeftMotor;
     MotorControl RightMotor;
     void queueCommand(int mode, float value);

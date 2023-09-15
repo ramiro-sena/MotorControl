@@ -20,6 +20,10 @@ class MotorControl
 
     int MotorPosition;
     double MotorSpeed;
+    double smoothSpeed[5];
+    double Speed;
+    int sampleSize = 5;
+    int sampleIndex = 0;
     
     int Mode;
 
@@ -28,10 +32,13 @@ class MotorControl
     void stop();
     void increment();
     void handleControl();
+    
+    int moveSpeed = 80;
 
     int distance;
     int _queue[20];
     boolean _isMoving = false;
+    int steer = 0;
 
   private:
     PID myPID;
